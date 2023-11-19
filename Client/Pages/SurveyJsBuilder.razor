@@ -1,0 +1,46 @@
+﻿@page "/creator"
+@inject HttpClient Http
+@inject IJSRuntime Jsr
+@implements IDisposable
+
+<h4>Compose your Dynamic Form here..</h4>
+
+<div id="surveyContainer">
+    <div id="creatorElement"></div>
+</div>
+
+@code {
+
+    [Inject]
+    public IJSRuntime jsRuntime { get; set; }
+    private IJSObjectReference? module;
+    DotNetObjectReference<SurveyJsBuilder> ObjectReference;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ObjectReference = DotNetObjectReference.Create(this);
+            await Jsr.InvokeVoidAsync("SurveyHelper.ShowSurvey", ObjectReference, "");
+        }
+    }
+
+    // being called by js, check dependency while changes
+    [JSInvokable("SaveSurvey")]
+    public async Task SaveQuestions(string surveyContent)
+    {
+        // place your code here.. to make an API call and save the surveyJson.
+        await Jsr.InvokeVoidAsync("alert", "Survey Builder: " + surveyContent);
+
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+
+        if (ObjectReference != null)
+        {
+            //Now dispose our object reference so our component can be garbage collected
+            ObjectReference.Dispose();
+        }
+    }
+}
